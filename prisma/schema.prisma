@@ -64,12 +64,20 @@ model Artifact {
 }
 
 model ArtifactVersion {
-  id          String   @id @default(cuid())
-  artifactId  String
-  number      Int
-  dataJson    Json
-  createdAt   DateTime @default(now())
-  artifact    Artifact @relation(fields: [artifactId], references: [id])
+  id           String   @id @default(cuid())
+  artifactId   String
+  parentId     String?
+  branch       String   @default("main")
+  contentText  String?
+  blobUrl      String?
+  summary      String?
+  autoSummary  String?
+  diffJson     Json?
+  modelName    String?
+  provider     String?
+  paramsJson   Json?
+  createdAt    DateTime @default(now())
+  artifact     Artifact @relation(fields: [artifactId], references: [id])
 }
 
 model Run {

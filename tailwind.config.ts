@@ -1,4 +1,6 @@
 import type { Config } from "tailwindcss";
+import typography from "@tailwindcss/typography";
+import forms from "@tailwindcss/forms";
 export default {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   darkMode: ["class"],
@@ -14,11 +16,14 @@ export default {
       },
       transitionTimingFunction: { smooth: "cubic-bezier(0.4,0,0.2,1)" },
       keyframes: {
-        reveal: { "0%": { opacity: 0, transform: "scale(.98)" }, "100%": { opacity: 1, transform: "scale(1)" } },
+        reveal: {
+          "0%": { opacity: "0", transform: "scale(.98)" },
+          "100%": { opacity: "1", transform: "scale(1)" }
+        },
         press: { "0%": { transform: "scale(1)" }, "100%": { transform: "scale(.97)" } }
       },
       animation: { reveal: "reveal .25s smooth both", press: "press .12s ease-out both" }
     }
   },
-  plugins: [require("@tailwindcss/typography"), require("@tailwindcss/forms")]
+  plugins: [typography, forms]
 } satisfies Config;
