@@ -13,10 +13,10 @@ export default {
         "soft-lg": "0 20px 50px rgba(0,0,0,0.12)"
       },
       transitionTimingFunction: { smooth: "cubic-bezier(0.4,0,0.2,1)" },
-      keyframes: {
-        reveal: { "0%": { opacity: 0, transform: "scale(.98)" }, "100%": { opacity: 1, transform: "scale(1)" } },
-        press: { "0%": { transform: "scale(1)" }, "100%": { transform: "scale(.97)" } }
-      },
+        keyframes: {
+          reveal: { "0%": { opacity: "0", transform: "scale(.98)" }, "100%": { opacity: "1", transform: "scale(1)" } },
+          press: { "0%": { transform: "scale(1)" }, "100%": { transform: "scale(.97)" } }
+        },
       animation: { reveal: "reveal .25s smooth both", press: "press .12s ease-out both" }
     }
   },
