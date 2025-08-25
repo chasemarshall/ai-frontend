@@ -12,6 +12,8 @@ model Org {
   name      String
   projects  Project[]
   users     UserOrg[]
+  playbooks Playbook[]
+  kbSources KbSource[]
   createdAt DateTime  @default(now())
 }
 
