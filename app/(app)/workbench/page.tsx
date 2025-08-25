@@ -1,10 +1,19 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Card } from "@/components/Card";
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
-import Drawer from "@/components/Drawer";
-import StylePicker from "@/components/StylePicker";
+import { 
+  PlusIcon, 
+  Bars3Icon, 
+  MagnifyingGlassIcon,
+  GlobeAltIcon,
+  DocumentTextIcon,
+  CodeBracketIcon,
+  BookOpenIcon,
+  Cog6ToothIcon,
+  PaperAirplaneIcon,
+  EllipsisVerticalIcon,
+  ArrowUpIcon,
+  XMarkIcon
+} from "@heroicons/react/24/outline";
 
 // Enhanced Message Interface
 interface Message {
@@ -17,81 +26,33 @@ interface Message {
   isStreaming?: boolean;
 }
 
-interface Artifact {
+interface ChatSession {
   id: string;
-  name: string;
-  type: string;
-  content: string;
-  createdAt: Date;
-  versions: number;
+  title: string;
+  lastMessage: string;
+  timestamp: Date;
+  isActive: boolean;
 }
 
-// Keyboard shortcut hook
-function useKeyboardShortcuts(handlers: Record<string, () => void>) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const cmdOrCtrl = e.metaKey || e.ctrlKey;
-      const key = e.key.toLowerCase();
-      
-      if (cmdOrCtrl && e.shiftKey && key === 'd') {
-        e.preventDefault();
-        handlers.showDiff?.();
-      } else if (cmdOrCtrl && key === 'k') {
-        e.preventDefault();  
-        handlers.openOmni?.();
-      } else if (cmdOrCtrl && key === 's') {
-        e.preventDefault();
-        handlers.save?.();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handlers]);
-}
-
-// Streaming text animation hook
-function useStreamingText(text: string, isStreaming: boolean) {
-  const [displayText, setDisplayText] = useState('');
-  
-  useEffect(() => {
-    if (!isStreaming) {
-      setDisplayText(text);
-      return;
-    }
-    
-    let currentIndex = 0;
-    const timer = setInterval(() => {
-      if (currentIndex < text.length) {
-        setDisplayText(text.slice(0, currentIndex + 1));
-        currentIndex++;
-      } else {
-        clearInterval(timer);
-      }
-    }, 20);
-    
-    return () => clearInterval(timer);
-  }, [text, isStreaming]);
-  
-  return displayText;
-}
-
-export default function EnhancedWorkbench() {
+export default function ModernAIWorkbench() {
   // State management
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
-  const [selectedModel, setSelectedModel] = useState("openai/gpt-4o-mini");
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [styleSlug, setStyleSlug] = useState("normal");
-  const [estimatedCost, setEstimatedCost] = useState(0);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [selectedModel, setSelectedModel] = useState("gpt-4");
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [codeInterpreterEnabled, setCodeInterpreterEnabled] = useState(false);
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
+    { id: '1', title: 'React Performance Optimization', lastMessage: 'Great! Let me help you optimize...', timestamp: new Date(Date.now() - 1000 * 60 * 30), isActive: true },
+    { id: '2', title: 'TypeScript Best Practices', lastMessage: 'Here are the key principles...', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), isActive: false },
+    { id: '3', title: 'CSS Grid Layout', lastMessage: 'Perfect! Grid is ideal for...', timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), isActive: false },
+  ]);
 
   // Refs
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -100,30 +61,20 @@ export default function EnhancedWorkbench() {
     scrollToBottom();
   }, [messages]);
 
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
+  // Auto-resize textarea
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = inputRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    }
   }, []);
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts({
-    showDiff: () => console.log("Show diff"),
-    openOmni: () => inputRef.current?.focus(),
-    save: () => console.log("Save conversation")
-  });
-
-  // Cost estimation (mock)
   useEffect(() => {
-    const totalTokens = messages.reduce((sum, m) => sum + m.content.length / 4, 0);
-    const modelRates = {
-      "openai/gpt-4o-mini": 0.0001,
-      "openai/gpt-4o": 0.005,
-      "anthropic/claude-3-sonnet": 0.003
-    };
-    setEstimatedCost(totalTokens * (modelRates[selectedModel as keyof typeof modelRates] || 0.0001));
-  }, [messages, selectedModel]);
+    adjustTextareaHeight();
+  }, [input, adjustTextareaHeight]);
 
-  // Send message function with streaming simulation
+  // Send message function
   const sendMessage = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
@@ -138,10 +89,10 @@ export default function EnhancedWorkbench() {
     setInput("");
     setIsLoading(true);
 
-    // Create streaming assistant message
+    // Simulate streaming response
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
-      role: 'assistant', 
+      role: 'assistant',
       content: "",
       timestamp: new Date(),
       model: selectedModel,
@@ -151,49 +102,28 @@ export default function EnhancedWorkbench() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: 'demo-conversation',
-          model: selectedModel,
-          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
-          styleOverrideSlug: styleSlug
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to send message');
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response body');
+      // Simulate API call with streaming
+      const responses = [
+        "I'd be happy to help you with that! Let me break this down for you.",
+        " First, let's consider the core concepts involved in your question.",
+        " Based on what you've described, here are several approaches we could take:",
+        "\n\n1. **Option A**: A direct implementation that focuses on simplicity",
+        "\n2. **Option B**: A more robust solution with error handling",
+        "\n3. **Option C**: An advanced approach with optimization",
+        "\n\nWould you like me to elaborate on any of these options or dive deeper into a specific approach?"
+      ];
 
       let accumulatedContent = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim());
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              if (data.choices?.[0]?.delta?.content) {
-                accumulatedContent += data.choices[0].delta.content;
-                
-                setMessages(prev => prev.map(m => 
-                  m.id === assistantMessage.id 
-                    ? { ...m, content: accumulatedContent }
-                    : m
-                ));
-              }
-            } catch (e) {
-              // Ignore parsing errors for streaming
-            }
-          }
-        }
+      
+      for (let i = 0; i < responses.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 300));
+        accumulatedContent += responses[i];
+        
+        setMessages(prev => prev.map(m => 
+          m.id === assistantMessage.id 
+            ? { ...m, content: accumulatedContent }
+            : m
+        ));
       }
 
       // Finalize message
@@ -203,28 +133,14 @@ export default function EnhancedWorkbench() {
           : m
       ));
 
-      // Check if response suggests creating an artifact
-      if (accumulatedContent.includes('```') || accumulatedContent.toLowerCase().includes('artifact')) {
-        const newArtifact: Artifact = {
-          id: Date.now().toString(),
-          name: `Generated ${new Date().toLocaleTimeString()}`,
-          type: 'code',
-          content: accumulatedContent,
-          createdAt: new Date(),
-          versions: 1
-        };
-        setArtifacts(prev => [...prev, newArtifact]);
-      }
-
     } catch (error) {
       console.error('Error sending message:', error);
-      setMessages(prev => prev.slice(0, -1)); // Remove failed message
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
-  }, [input, isLoading, messages, selectedModel, styleSlug]);
+  }, [input, isLoading, selectedModel]);
 
-  // Handle Enter key
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -232,188 +148,307 @@ export default function EnhancedWorkbench() {
     }
   };
 
+  const newChat = () => {
+    setMessages([]);
+    setChatSessions(prev => prev.map(s => ({ ...s, isActive: false })));
+  };
+
   return (
-    <div className="min-h-screen bg-white text-black">
-      {/* Header */}
-      <div className="border-b border-black/5 bg-white/95 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight">AI Workbench</h1>
-              <p className="text-black/60 text-sm">Contemporary minimalist interface</p>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* Model Selector */}
-              <select 
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="px-3 py-2 border border-black/10 rounded-2xl bg-white text-sm focus:outline-none focus:ring-2 focus:ring-black/20 transition-all"
-              >
-                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-                <option value="openai/gpt-4o">GPT-4o</option>
-                <option value="anthropic/claude-3-sonnet">Claude 3 Sonnet</option>
-              </select>
+    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+      {/* Sidebar */}
+      <div className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 bg-gray-800 border-r border-gray-700 flex flex-col overflow-hidden`}>
+        <div className="p-4 border-b border-gray-700">
+          <button 
+            onClick={newChat}
+            className="w-full flex items-center gap-3 px-4 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors"
+          >
+            <PlusIcon className="w-5 h-5" />
+            <span className="font-medium">New Chat</span>
+          </button>
+        </div>
 
-              {/* Cost Display */}
-              <div className="text-xs text-black/50 px-3 py-2 bg-black/5 rounded-2xl">
-                ~${estimatedCost.toFixed(4)}
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600">
+          <div className="p-4">
+            <div className="mb-4">
+              <div className="relative">
+                <MagnifyingGlassIcon className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search chats..."
+                  className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-
-              <StylePicker conversationId="demo-conversation" onChange={setStyleSlug} />
-              
-              <Button 
-                tone="outline" 
-                onClick={() => setDrawerOpen(true)}
-                className="hover:scale-105 transition-transform"
-              >
-                Artifacts ({artifacts.length})
-              </Button>
             </div>
+
+            <div className="space-y-2">
+              {chatSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className={`group flex items-start gap-3 p-3 rounded-lg hover:bg-gray-700 cursor-pointer transition-colors ${
+                    session.isActive ? 'bg-gray-700' : ''
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-white truncate">
+                      {session.title}
+                    </div>
+                    <div className="text-xs text-gray-400 truncate mt-1">
+                      {session.lastMessage}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {session.timestamp.toLocaleDateString()}
+                    </div>
+                  </div>
+                  <button className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-600 rounded transition-opacity">
+                    <EllipsisVerticalIcon className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 border-t border-gray-700">
+          <div className="space-y-3">
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+              <BookOpenIcon className="w-4 h-4" />
+              Library
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
+              <Cog6ToothIcon className="w-4 h-4" />
+              Settings
+            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Messages */}
-        <div className="space-y-8 mb-8">
-          {messages.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 bg-black/5 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <span className="text-2xl">💭</span>
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="h-16 border-b border-gray-700 flex items-center justify-between px-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <Bars3Icon className="w-5 h-5" />
+            </button>
+            
+            <div className="flex items-center gap-2">
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                <option value="claude-3">Claude 3</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Feature Toggles */}
+            <button
+              onClick={() => setWebSearchEnabled(!webSearchEnabled)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                webSearchEnabled 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <GlobeAltIcon className="w-4 h-4" />
+              Web Search
+            </button>
+            
+            <button
+              onClick={() => setCodeInterpreterEnabled(!codeInterpreterEnabled)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                codeInterpreterEnabled 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              <CodeBracketIcon className="w-4 h-4" />
+              Code Interpreter
+            </button>
+
+            <button className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-gray-300 hover:bg-gray-600 rounded-lg text-sm transition-colors">
+              <DocumentTextIcon className="w-4 h-4" />
+              Artifacts (2)
+            </button>
+          </div>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto">
+          {messages.length === 0 ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center max-w-md">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <h2 className="text-2xl font-semibold mb-4">How can I help you today?</h2>
+                <p className="text-gray-400 mb-8">
+                  I can help you with coding, writing, analysis, and creative projects. 
+                  Just ask me anything!
+                </p>
+                
+                <div className="grid grid-cols-1 gap-3">
+                  {[
+                    "Explain a complex concept",
+                    "Write some code",
+                    "Plan a project",
+                    "Analyze data"
+                  ].map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setInput(suggestion)}
+                      className="p-3 bg-gray-800 hover:bg-gray-700 rounded-xl text-left transition-colors"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <h3 className="text-xl font-medium mb-2">Ready to create something amazing?</h3>
-              <p className="text-black/60">Start a conversation and I'll help you build, explore, and iterate.</p>
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto px-6 py-8">
+              <div className="space-y-8">
+                {messages.map((message, index) => (
+                  <MessageBubble 
+                    key={message.id} 
+                    message={message} 
+                    isLatest={index === messages.length - 1}
+                  />
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
           )}
-
-          {messages.map((message, index) => (
-            <MessageBubble 
-              key={message.id} 
-              message={message} 
-              isLatest={index === messages.length - 1}
-            />
-          ))}
-          
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
-        <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm py-6">
-          <div className="relative">
-            <Input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Message AI Workbench..."
-              className="pr-16 h-14 text-base border-black/10 rounded-3xl focus:ring-2 focus:ring-black/20 transition-all"
-              disabled={isLoading}
-            />
+        <div className="border-t border-gray-700 p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="relative">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Message AI Workbench..."
+                className="w-full min-h-[60px] max-h-[200px] resize-none bg-gray-800 border border-gray-600 rounded-2xl px-4 py-4 pr-16 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                disabled={isLoading}
+                style={{ height: 'auto' }}
+              />
+              
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || isLoading}
+                className="absolute right-3 bottom-3 p-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-xl transition-colors"
+              >
+                {isLoading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <ArrowUpIcon className="w-5 h-5" />
+                )}
+              </button>
+            </div>
             
-            <Button
-              onClick={sendMessage}
-              disabled={!input.trim() || isLoading}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-4 rounded-2xl disabled:opacity-30 hover:scale-105 transition-all"
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-              ) : (
-                "Send"
-              )}
-            </Button>
-          </div>
-          
-          <div className="flex justify-center mt-4">
-            <div className="text-xs text-black/40 flex items-center gap-4">
-              <span>⌘K to focus</span>
-              <span>⌘S to save</span>
-              <span>⇧⌘D for diff</span>
+            {(webSearchEnabled || codeInterpreterEnabled) && (
+              <div className="flex gap-2 mt-3">
+                {webSearchEnabled && (
+                  <span className="flex items-center gap-1 px-2 py-1 bg-blue-600/20 text-blue-400 text-xs rounded-md">
+                    <GlobeAltIcon className="w-3 h-3" />
+                    Web Search Enabled
+                  </span>
+                )}
+                {codeInterpreterEnabled && (
+                  <span className="flex items-center gap-1 px-2 py-1 bg-green-600/20 text-green-400 text-xs rounded-md">
+                    <CodeBracketIcon className="w-3 h-3" />
+                    Code Interpreter Enabled
+                  </span>
+                )}
+              </div>
+            )}
+            
+            <div className="flex justify-center mt-4">
+              <p className="text-xs text-gray-500">
+                AI can make mistakes. Check important info.
+              </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Artifacts Drawer */}
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Artifacts</h2>
-          <Button tone="ghost" onClick={() => setDrawerOpen(false)}>
-            ✕
-          </Button>
-        </div>
-        
-        <div className="space-y-4">
-          {artifacts.length === 0 ? (
-            <div className="text-center py-8 text-black/60">
-              <p>No artifacts yet. Create some through conversation!</p>
-            </div>
-          ) : (
-            artifacts.map(artifact => (
-              <div key={artifact.id} className="p-4 border border-black/10 rounded-2xl hover:bg-black/5 transition-colors cursor-pointer">
-                <div className="font-medium mb-1">{artifact.name}</div>
-                <div className="text-sm text-black/60 mb-2">{artifact.type}</div>
-                <div className="text-xs text-black/40">
-                  {artifact.createdAt.toLocaleString()} • v{artifact.versions}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </Drawer>
     </div>
   );
 }
 
 // Enhanced Message Bubble Component
 function MessageBubble({ message, isLatest }: { message: Message; isLatest: boolean }) {
-  const streamedContent = useStreamingText(message.content, message.isStreaming || false);
+  const [displayText, setDisplayText] = useState('');
+  
+  useEffect(() => {
+    if (message.isStreaming) {
+      let currentIndex = 0;
+      const timer = setInterval(() => {
+        if (currentIndex < message.content.length) {
+          setDisplayText(message.content.slice(0, currentIndex + 1));
+          currentIndex++;
+        } else {
+          clearInterval(timer);
+        }
+      }, 20);
+      
+      return () => clearInterval(timer);
+    } else {
+      setDisplayText(message.content);
+    }
+  }, [message.content, message.isStreaming]);
   
   return (
-    <div 
-      className={`flex gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500 ${
-        message.role === 'user' ? 'flex-row-reverse' : ''
-      }`}
-      style={{ animationDelay: isLatest ? '100ms' : '0ms' }}
-    >
-      {/* Avatar */}
-      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-        message.role === 'user' 
-          ? 'bg-black text-white' 
-          : 'bg-black/5 text-black/70'
-      }`}>
-        {message.role === 'user' ? 'You' : 'AI'}
-      </div>
+    <div className={`flex gap-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+      {message.role === 'assistant' && (
+        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <span className="text-sm">🤖</span>
+        </div>
+      )}
       
-      {/* Message Content */}
-      <div className={`flex-1 ${message.role === 'user' ? 'text-right' : ''}`}>
-        <div className={`inline-block p-4 rounded-3xl max-w-2xl ${
+      <div className={`max-w-[70%] ${message.role === 'user' ? 'order-first' : ''}`}>
+        <div className={`p-4 rounded-2xl ${
           message.role === 'user'
-            ? 'bg-black text-white rounded-tr-lg'
-            : 'bg-black/5 text-black rounded-tl-lg'
+            ? 'bg-blue-600 text-white ml-auto'
+            : 'bg-gray-800 text-gray-100'
         }`}>
-          <div className="prose prose-sm max-w-none">
-            {message.isStreaming ? (
-              <span>
-                {streamedContent}
-                <span className="animate-pulse">▋</span>
-              </span>
-            ) : (
-              <pre className="whitespace-pre-wrap font-sans">{message.content}</pre>
-            )}
+          <div className="prose prose-invert max-w-none">
+            <div className="whitespace-pre-wrap">
+              {displayText}
+              {message.isStreaming && (
+                <span className="animate-pulse border-l-2 border-white ml-1"></span>
+              )}
+            </div>
           </div>
         </div>
         
-        {/* Message Metadata */}
-        <div className={`mt-2 text-xs text-black/40 flex gap-3 ${
-          message.role === 'user' ? 'justify-end' : ''
+        <div className={`mt-2 text-xs text-gray-500 flex items-center gap-2 ${
+          message.role === 'user' ? 'justify-end' : 'justify-start'
         }`}>
           <span>{message.timestamp.toLocaleTimeString()}</span>
-          {message.model && <span>{message.model}</span>}
-          {message.artifacts && <span>{message.artifacts.length} artifacts</span>}
+          {message.model && (
+            <>
+              <span>•</span>
+              <span>{message.model}</span>
+            </>
+          )}
         </div>
       </div>
+      
+      {message.role === 'user' && (
+        <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+          <span className="text-sm font-medium">U</span>
+        </div>
+      )}
     </div>
   );
 }
