@@ -1,4 +1,5 @@
-export default function Drawer({ open, onClose, children }:{ open:boolean; onClose:()=>void; children:React.ReactNode }) {
+import type { ReactNode } from "react";
+export default function Drawer({ open, onClose, children }:{ open:boolean; onClose:()=>void; children?:ReactNode }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50">
