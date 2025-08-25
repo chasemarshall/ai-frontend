@@ -5,7 +5,6 @@ import {
   Bars3Icon, 
   MagnifyingGlassIcon,
   GlobeAltIcon,
-  DocumentTextIcon,
   CodeBracketIcon,
   BookOpenIcon,
   Cog6ToothIcon,
@@ -31,6 +30,12 @@ interface ChatSession {
 }
 
 export default function ModernAIWorkbench() {
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
+    { id: '1', title: 'React Optimization', lastMessage: 'Optimization tips...', timestamp: new Date(), isActive: true },
+    { id: '2', title: 'TypeScript', lastMessage: 'Best practices...', timestamp: new Date(), isActive: false },
+    { id: '3', title: 'CSS Grid', lastMessage: 'Layout techniques...', timestamp: new Date(), isActive: false },
+  ]);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,11 +43,6 @@ export default function ModernAIWorkbench() {
   const [selectedModel, setSelectedModel] = useState("gpt-4");
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [codeInterpreterEnabled, setCodeInterpreterEnabled] = useState(false);
-  const [chatSessions] = useState<ChatSession[]>([
-    { id: '1', title: 'React Optimization', lastMessage: 'Optimization tips...', timestamp: new Date(), isActive: true },
-    { id: '2', title: 'TypeScript', lastMessage: 'Best practices...', timestamp: new Date(), isActive: false },
-    { id: '3', title: 'CSS Grid', lastMessage: 'Layout techniques...', timestamp: new Date(), isActive: false },
-  ]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -133,9 +133,10 @@ export default function ModernAIWorkbench() {
     }
   };
 
+  // CORRECTED FUNCTION - FIXED THE ERROR
   const newChat = () => {
     setMessages([]);
-    chatSessions(prev => prev.map(s => ({ ...s, isActive: false })));
+    setChatSessions(prev => prev.map(s => ({ ...s, isActive: false })));
   };
 
   return (
