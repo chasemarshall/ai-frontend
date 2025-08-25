@@ -1,10 +1,16 @@
 import type React from "react";
+import { forwardRef } from "react";
 
-export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
-  const { className = "", ...rest } = props;
-  const baseClasses = "flex h-10 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-gray-900 disabled:cursor-not-allowed disabled:opacity-50";
-  const classes = `${baseClasses} ${className}`.trim();
-  return <input {...rest} className={classes} />;
-}
+export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  function Input(props, ref) {
+    const { className = "", ...rest } = props;
+    
+    const baseClasses = "flex h-11 w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-base text-black placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black/20 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-30 transition-all duration-200 hover:border-black/20";
+    
+    const classes = `${baseClasses} ${className}`.trim();
+    
+    return <input ref={ref} {...rest} className={classes} />;
+  }
+);
 
 export default Input;
