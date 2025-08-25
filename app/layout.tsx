@@ -1,4 +1,3 @@
-"use client";
 import "./globals.css";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
@@ -113,48 +112,6 @@ export default function RootLayout({
             </div>
           </div>
         )}
-        
-        {/* Global styles for better UX */}
-        <style jsx global>{`
-          /* Improve mobile Safari experience */
-          html {
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
-          }
-          
-          /* Prevent horizontal scroll on mobile */
-          body {
-            overflow-x: hidden;
-          }
-          
-          /* Improve touch targets */
-          button, 
-          [role="button"], 
-          input[type="submit"], 
-          input[type="button"] {
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            appearance: none;
-            touch-action: manipulation;
-          }
-          
-          /* Better focus indicators */
-          *:focus-visible {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
-          }
-          
-          /* Smooth scrolling */
-          * {
-            scroll-behavior: smooth;
-          }
-          
-          @media (prefers-reduced-motion: reduce) {
-            * {
-              scroll-behavior: auto;
-            }
-          }
-        `}</style>
       </body>
     </html>
   );
