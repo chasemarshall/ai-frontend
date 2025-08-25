@@ -135,7 +135,7 @@ export default function ModernAIWorkbench() {
 
   const newChat = () => {
     setMessages([]);
-    ChatSessions(prev => prev.map(s => ({ ...s, isActive: false })));
+    chatSessions(prev => prev.map(s => ({ ...s, isActive: false })));
   };
 
   return (
