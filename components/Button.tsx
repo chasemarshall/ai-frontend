@@ -1,36 +1,29 @@
 import type React from "react";
 
-type ButtonTone = "solid" | "glass" | "ghost";
+type ButtonTone = "default" | "secondary" | "ghost" | "outline";
 type ButtonSize = "sm" | "md" | "lg";
 
-const baseClasses =
-  "inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold " +
-  "transition-transform duration-150 ease-smooth active:scale-95 select-none border";
+const baseClasses = "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50";
 
 const toneClasses: Record<ButtonTone, string> = {
-  solid: "bg-ink text-paper border-black",
-  glass: "bg-white/20 text-ink border-black/10 backdrop-blur",
-  ghost: "bg-transparent text-ink border-black/10"
+  default: "bg-white text-gray-900 hover:bg-gray-100",
+  secondary: "bg-gray-800 text-gray-100 hover:bg-gray-700 border border-gray-700",
+  ghost: "text-gray-400 hover:text-gray-100 hover:bg-gray-800",
+  outline: "border border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white"
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "h-9",
-  md: "h-10",
-  lg: "h-12 text-base px-5"
+  sm: "h-9 px-3 text-sm",
+  md: "h-10 px-4 py-2",
+  lg: "h-11 px-8"
 };
 
-function composeButtonClass({ tone, size }: { tone: ButtonTone; size: ButtonSize }) {
-  return [baseClasses, toneClasses[tone], sizeClasses[size]].join(" ");
-}
-
-export function Button(
-  props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
-    tone?: ButtonTone;
-    size?: ButtonSize;
-  }
-) {
-  const { className = "", tone = "solid", size = "md", ...rest } = props;
-  const classes = `${composeButtonClass({ tone, size })} ${className}`.trim();
+export function Button(props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  tone?: ButtonTone;
+  size?: ButtonSize;
+}) {
+  const { className = "", tone = "default", size = "md", ...rest } = props;
+  const classes = `${baseClasses} ${toneClasses[tone]} ${sizeClasses[size]} ${className}`.trim();
   return <button className={classes} {...rest} />;
 }
 
