@@ -2,112 +2,72 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import type { Metadata } from "next";
 
-const inter = Inter({ 
-  subsets: ["latin"], 
-  weight: ["400", "500", "600", "700"], 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-inter",
-  display: 'swap',
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "AI Workbench",
   description: "Modern AI-powered workspace for developers and creators",
-  keywords: ["AI", "Workbench", "Chat", "Development", "Productivity"],
-  authors: [{ name: "AI Workbench Team" }],
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
-  themeColor: "#111827",
+  themeColor: "#0b0b0f",
   colorScheme: "dark",
-  robots: "index, follow",
-  openGraph: {
-    title: "AI Workbench",
-    description: "Modern AI-powered workspace for developers and creators",
-    type: "website",
-    locale: "en_US",
-    siteName: "AI Workbench",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "AI Workbench",
-    description: "Modern AI-powered workspace for developers and creators",
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "AI Workbench",
-  },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "AI Workbench" },
+  openGraph: { title: "AI Workbench", description: "Modern AI-powered workspace", type: "website", siteName: "AI Workbench", locale: "en_US" },
+  twitter: { card: "summary_large_image", title: "AI Workbench", description: "Modern AI-powered workspace" },
 };
 
-export default function RootLayout({ 
-  children 
-}: { 
-  children: React.ReactNode 
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`dark ${inter.variable}`} suppressHydrationWarning>
       <head>
-        {/* Meta tags for better mobile experience */}
         <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        
-        {/* Preload critical resources */}
-        <link rel="dns-prefetch" href="//openrouter.ai" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        
-        {/* Prevent flash of unstyled content */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                // Ensure dark mode is applied immediately
-                document.documentElement.classList.add('dark');
-              })();
-            `,
+            __html: `document.documentElement.classList.add('dark');`,
           }}
         />
       </head>
-      
-      <body className="min-h-screen bg-gray-900 text-white antialiased font-sans overflow-hidden">
-        {/* Skip to main content for screen readers */}
+      <body className="min-h-screen bg-[#0b0b0f] text-gray-100 antialiased">
+        {/* skip link */}
         <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-blue-600 text-white rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-blue-600 text-white rounded-lg"
         >
-          Skip to main content
+          Skip to content
         </a>
-        
-        {/* Main application container */}
-        <div id="main-content" className="h-screen flex flex-col">
-          {children}
+
+        {/* app shell: sidebar + main */}
+        <div className="grid grid-cols-[280px_minmax(0,1fr)] grid-rows-[56px_minmax(0,1fr)] h-dvh">
+          {/* top bar */}
+          <header className="col-span-2 row-[1] flex items-center px-4 border-b border-white/10 bg-black/40 backdrop-blur">
+            <div className="font-medium text-white/90">AI Workbench</div>
+            <div className="ml-auto flex items-center gap-2 text-white/60">
+              {/* put icons/actions here */}
+            </div>
+          </header>
+
+          {/* sidebar */}
+          <aside className="row-[2] border-r border-white/10 bg-black/30 overflow-y-auto">
+            <div className="p-3 text-xs uppercase tracking-wide text-white/40">Chats</div>
+            {/* your chat list here */}
+          </aside>
+
+          {/* main content */}
+          <main id="main" className="row-[2] overflow-hidden bg-[#0b0b0f]">
+            <div className="h-full w-full overflow-y-auto">{children}</div>
+          </main>
         </div>
-        
-        {/* Global notifications container */}
-        <div 
-          id="notifications" 
-          className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"
-          role="region" 
-          aria-label="Notifications"
-        >
-          {/* Notifications will be rendered here */}
-        </div>
-        
-        {/* Loading overlay */}
-        <div 
-          id="global-loading" 
-          className="hidden fixed inset-0 bg-gray-900/80 backdrop-blur-sm z-50 flex items-center justify-center"
-        >
-          <div className="bg-gray-800 border border-gray-700 rounded-xl p-6 flex items-center gap-4">
-            <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-white font-medium">Loading...</span>
-          </div>
-        </div>
-        
-        {/* Development indicator */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="fixed bottom-4 left-4 z-40 no-print">
-            <div className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-400 px-3 py-2 rounded-lg text-sm font-mono backdrop-blur-sm">
+
+        {/* dev badge */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="fixed bottom-4 left-4 z-40">
+            <div className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 px-2 py-1 rounded-md text-xs font-mono">
               DEV
             </div>
           </div>
