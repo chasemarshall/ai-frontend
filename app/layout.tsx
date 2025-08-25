@@ -15,9 +15,23 @@ export const metadata: Metadata = {
   viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   themeColor: "#0b0b0f",
   colorScheme: "dark",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "AI Workbench" },
-  openGraph: { title: "AI Workbench", description: "Modern AI-powered workspace", type: "website", siteName: "AI Workbench", locale: "en_US" },
-  twitter: { card: "summary_large_image", title: "AI Workbench", description: "Modern AI-powered workspace" },
+  appleWebApp: { 
+    capable: true, 
+    statusBarStyle: "black-translucent", 
+    title: "AI Workbench" 
+  },
+  openGraph: { 
+    title: "AI Workbench", 
+    description: "Modern AI-powered workspace", 
+    type: "website", 
+    siteName: "AI Workbench", 
+    locale: "en_US" 
+  },
+  twitter: { 
+    card: "summary_large_image", 
+    title: "AI Workbench", 
+    description: "Modern AI-powered workspace" 
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -34,7 +48,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen bg-[#0b0b0f] text-gray-100 antialiased">
-        {/* skip link */}
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-[100] px-4 py-2 bg-blue-600 text-white rounded-lg"
@@ -42,29 +55,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
 
-        {/* app shell: sidebar + main */}
         <div className="grid grid-cols-[280px_minmax(0,1fr)] grid-rows-[56px_minmax(0,1fr)] h-dvh">
-          {/* top bar */}
           <header className="col-span-2 row-[1] flex items-center px-4 border-b border-white/10 bg-black/40 backdrop-blur">
             <div className="font-medium text-white/90">AI Workbench</div>
             <div className="ml-auto flex items-center gap-2 text-white/60">
-              {/* put icons/actions here */}
+              {/* Action icons */}
             </div>
           </header>
 
-          {/* sidebar */}
           <aside className="row-[2] border-r border-white/10 bg-black/30 overflow-y-auto">
             <div className="p-3 text-xs uppercase tracking-wide text-white/40">Chats</div>
-            {/* your chat list here */}
           </aside>
 
-          {/* main content */}
           <main id="main" className="row-[2] overflow-hidden bg-[#0b0b0f]">
             <div className="h-full w-full overflow-y-auto">{children}</div>
           </main>
         </div>
 
-        {/* dev badge */}
         {process.env.NODE_ENV === "development" && (
           <div className="fixed bottom-4 left-4 z-40">
             <div className="bg-yellow-600/20 border border-yellow-500/30 text-yellow-300 px-2 py-1 rounded-md text-xs font-mono">
